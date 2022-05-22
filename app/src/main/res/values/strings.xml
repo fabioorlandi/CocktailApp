@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">CocktailApp</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="online_fragment_label">Online Fragment</string>
+    <string name="offline_fragment_label">Offline Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_online_fragment">Hello online fragment</string>
+    <string name="hello_offline_fragment">Hello offline fragment. Arg: %1$s</string>
+</resources>
