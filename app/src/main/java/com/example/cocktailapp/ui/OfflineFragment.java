@@ -1,4 +1,4 @@
-package com.example.cocktailapp;
+package com.example.cocktailapp.ui;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,11 +9,12 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.example.cocktailapp.databinding.FragmentOnlineBinding;
+import com.example.cocktailapp.R;
+import com.example.cocktailapp.databinding.FragmentOfflineBinding;
 
-public class OnlineFragment extends Fragment {
+public class OfflineFragment extends Fragment {
 
-    private FragmentOnlineBinding binding;
+    private FragmentOfflineBinding binding;
 
     @Override
     public View onCreateView(
@@ -21,7 +22,7 @@ public class OnlineFragment extends Fragment {
             Bundle savedInstanceState
     ) {
 
-        binding = FragmentOnlineBinding.inflate(inflater, container, false);
+        binding = FragmentOfflineBinding.inflate(inflater, container, false);
         return binding.getRoot();
 
     }
@@ -29,11 +30,11 @@ public class OnlineFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        binding.buttonOnline.setOnClickListener(new View.OnClickListener() {
+        binding.buttonOffline.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NavHostFragment.findNavController(OnlineFragment.this)
-                        .navigate(R.id.action_FirstFragment_to_SecondFragment);
+                NavHostFragment.findNavController(OfflineFragment.this)
+                        .navigate(R.id.action_SecondFragment_to_FirstFragment);
             }
         });
     }

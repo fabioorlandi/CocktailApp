@@ -1,68 +1,31 @@
 package com.example.cocktailapp.model;
 
+import androidx.room.ColumnInfo;
+import androidx.room.Embedded;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+@Entity
 public class Ingredient {
 
-    private Long id;
-    private String name;
-    private String description;
-    private IngredientType ingredientType;
-    private Boolean isAlcoholic;
-    private Quantity quantity;
-    private Integer ABV;
+    @PrimaryKey
+    public Long ingredientId;
 
-    public Long getId() {
-        return id;
-    }
+    @ColumnInfo(name = "ingredient_name")
+    public String name;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @ColumnInfo(name = "ingredient_description")
+    public String description;
 
-    public String getName() {
-        return name;
-    }
+    @ColumnInfo(name = "ingredient_type")
+    public IngredientType ingredientType;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    @ColumnInfo(name = "is_alcoholic")
+    public Boolean isAlcoholic;
 
-    public String getDescription() {
-        return description;
-    }
+    @Embedded
+    public Quantity quantity;
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public IngredientType getIngredientType() {
-        return ingredientType;
-    }
-
-    public void setIngredientType(IngredientType ingredientType) {
-        this.ingredientType = ingredientType;
-    }
-
-    public Boolean getAlcoholic() {
-        return isAlcoholic;
-    }
-
-    public void setAlcoholic(Boolean alcoholic) {
-        isAlcoholic = alcoholic;
-    }
-
-    public Quantity getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Quantity quantity) {
-        this.quantity = quantity;
-    }
-
-    public Integer getABV() {
-        return ABV;
-    }
-
-    public void setABV(Integer ABV) {
-        this.ABV = ABV;
-    }
+    @ColumnInfo(name = "alcohol_by_volume")
+    public Integer ABV;
 }

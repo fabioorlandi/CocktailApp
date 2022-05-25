@@ -1,7 +1,9 @@
 package com.example.cocktailapp.model.DAO;
 
 import androidx.room.Dao;
+import androidx.room.Query;
 
 @Dao
-public interface IngredientDAO {
+public interface CocktailDAO {
+    @Query()
 }
