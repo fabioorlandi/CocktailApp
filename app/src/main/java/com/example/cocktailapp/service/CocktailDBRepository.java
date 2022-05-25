@@ -2,6 +2,7 @@ package com.example.cocktailapp.service;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.room.Room;
 
 import com.example.cocktailapp.app.CocktailApp;
@@ -45,11 +46,12 @@ public class CocktailDBRepository {
         if (hasNetwork) {
             List<Cocktail> cocktails = new ArrayList<>();
 
-            for (Character letter = 'a'; letter <= 'z'; letter++) {
-                retrofitService.getCocktailsByFirstLetter(letter.toString()).enqueue(new Callback<List<CocktailSurrogate>>() {
+            for (char letter = 'a'; letter <= 'z'; letter++) {
+                retrofitService.getCocktailsByFirstLetter(Character.toString(letter)).enqueue(new Callback<List<CocktailSurrogate>>() {
                     @Override
-                    public void onResponse(Call<List<CocktailSurrogate>> call, Response<List<CocktailSurrogate>> response) {
+                    public void onResponse(@NonNull Call<List<CocktailSurrogate>> call, @NonNull Response<List<CocktailSurrogate>> response) {
                         if (response.isSuccessful()) {
+                            assert response.body() != null;
                             for (CocktailSurrogate surrogate : response.body()){
                                 cocktails.add(surrogate.toCocktail());
                             }
@@ -57,7 +59,7 @@ public class CocktailDBRepository {
                     }
 
                     @Override
-                    public void onFailure(Call<List<CocktailSurrogate>> call, Throwable t) {
+                    public void onFailure(@NonNull Call<List<CocktailSurrogate>> call, @NonNull Throwable t) {
                         Log.d("API_ERROR", "Error fetching data", t);
                     }
                 });
@@ -65,6 +67,6 @@ public class CocktailDBRepository {
 
             return cocktails;
         } else
-            return roomDatabaseService.getAllCocktails();
+            return roomDatabaseService.cocktailDAO().getAllCocktails();
     }
 }
