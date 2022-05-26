@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.util.Date;
@@ -25,12 +26,17 @@ public class Cocktail {
     public Boolean isAlcoholic;
 
     @ColumnInfo(name = "glass_type")
-    public GlassType glassType;
+    public String glassType;
 
     @ColumnInfo(name = "instructions")
     public String instructions;
 
+    @ColumnInfo(name = "thumbnail")
     public Bitmap thumbnail;
+
+    @ColumnInfo(name = "image")
     public Bitmap image;
+
+    @ColumnInfo(name = "date_modified")
     public Date dateModified;
 }

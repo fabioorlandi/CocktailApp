@@ -18,7 +18,7 @@ public class Ingredient {
     public String description;
 
     @ColumnInfo(name = "ingredient_type")
-    public IngredientType ingredientType;
+    public String ingredientType;
 
     @ColumnInfo(name = "is_alcoholic")
     public Boolean isAlcoholic;
