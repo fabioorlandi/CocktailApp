@@ -1,11 +1,11 @@
 package com.example.cocktailapp.service;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.room.Room;
+import androidx.lifecycle.MutableLiveData;
 
-import com.example.cocktailapp.app.CocktailApp;
 import com.example.cocktailapp.model.Cocktail;
 import com.example.cocktailapp.model.surrogate.CocktailSurrogate;
 import com.example.cocktailapp.service.retrofit.CocktailDBRetrofitService;
@@ -14,59 +14,105 @@ import com.example.cocktailapp.service.room.CocktailDBRoomDatabaseService;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 
 public class CocktailDBRepository {
-    private CocktailDBRepository() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("www.thecocktaildb.com/api/json/v1/1/")
-                .build();
-        retrofitService = retrofit.create(CocktailDBRetrofitService.class);
+    @Inject
+    public CocktailDBRepository(CocktailDBRoomDatabaseService roomDatabaseService, CocktailDBRetrofitService retrofitService) {
+        this.roomDatabaseService = roomDatabaseService;
+        this.retrofitService = retrofitService;
 
-        roomDatabaseService = Room.databaseBuilder(CocktailApp.getAppContext(), CocktailDBRoomDatabaseService.class, "cocktail_database")
-                .build();
     }
 
-    private CocktailDBRetrofitService retrofitService;
     private CocktailDBRoomDatabaseService roomDatabaseService;
+    private CocktailDBRetrofitService retrofitService;
+    private MutableLiveData<List<Cocktail>> cocktailsObservable = new MutableLiveData<List<Cocktail>>();
 
-    private static CocktailDBRepository repository;
+    public void fetchData() {
+        List<Cocktail> loadingList = null;
 
-    public CocktailDBRepository getInstance() {
-        if (repository == null)
-            repository = new CocktailDBRepository();
+        if (cocktailsObservable.getValue() != null) {
+            loadingList = cocktailsObservable.getValue();
+        }
 
-        return repository;
+        cocktailsObservable.setValue(loadingList);
+
+        this.loadCocktailsFromDB();
+        this.loadCocktailsFromAPI();
     }
 
-    public List<Cocktail> getAllCocktails(Boolean hasNetwork) {
-        if (hasNetwork) {
-            List<Cocktail> cocktails = new ArrayList<>();
+    public MutableLiveData<List<Cocktail>> getCocktailsObservable() {
+        return cocktailsObservable;
+    }
 
-            for (char letter = 'a'; letter <= 'z'; letter++) {
-                retrofitService.getCocktailsByFirstLetter(Character.toString(letter)).enqueue(new Callback<List<CocktailSurrogate>>() {
-                    @Override
-                    public void onResponse(@NonNull Call<List<CocktailSurrogate>> call, @NonNull Response<List<CocktailSurrogate>> response) {
-                        if (response.isSuccessful()) {
-                            assert response.body() != null;
-                            for (CocktailSurrogate surrogate : response.body()){
-                                cocktails.add(surrogate.toCocktail());
-                            }
+    private void loadCocktailsFromAPI() {
+        List<Cocktail> cocktails = new ArrayList<>();
+
+        for (char letter = 'a'; letter <= 'z'; letter++) {
+            retrofitService.getCocktailsByFirstLetter(Character.toString(letter)).enqueue(new Callback<List<CocktailSurrogate>>() {
+                @Override
+                public void onResponse(@NonNull Call<List<CocktailSurrogate>> call, @NonNull Response<List<CocktailSurrogate>> response) {
+                    if (response.isSuccessful()) {
+                        assert response.body() != null;
+                        for (CocktailSurrogate surrogate : response.body()) {
+                            cocktails.add(surrogate.toCocktail());
                         }
                     }
+                }
 
-                    @Override
-                    public void onFailure(@NonNull Call<List<CocktailSurrogate>> call, @NonNull Throwable t) {
-                        Log.d("API_ERROR", "Error fetching data", t);
+                @Override
+                public void onFailure(@NonNull Call<List<CocktailSurrogate>> call, @NonNull Throwable t) {
+                    Log.d("API_ERROR", "Error fetching data", t);
+                }
+            });
+        }
+
+        this.addCocktailsToDB(cocktails);
+    }
+
+    private void addCocktailsToDB(List<Cocktail> cocktails) {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Boolean needsUpdate = false;
+                for (Cocktail cocktail : cocktails) {
+                    Long inserted = roomDatabaseService.cocktailDAO().insertCocktail(cocktail);
+                    if (inserted == -1) {
+                        Integer updated = roomDatabaseService.cocktailDAO().updateCocktail(cocktail);
+                        if (updated > 0) {
+                            needsUpdate = true;
+                        }
+                    } else {
+                        needsUpdate = true;
                     }
-                });
-            }
+                }
 
-            return cocktails;
-        } else
-            return roomDatabaseService.cocktailDAO().getAllCocktails();
+                if (needsUpdate)
+                    loadCocktailsFromDB();
+            }
+        });
+    }
+
+    private void loadCocktailsFromDB() {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<Cocktail> cocktails = roomDatabaseService.cocktailDAO().getAllCocktails();
+
+                if (cocktails != null && cocktails.size() > 0) {
+                    setCocktailsObservableData(cocktails);
+                }
+            }
+        });
+    }
+
+    private void setCocktailsObservableData(List<Cocktail> cocktails) {
+        if (cocktailsObservable.getValue() != null) {
+            cocktailsObservable.setValue(cocktails);
+        }
     }
 }

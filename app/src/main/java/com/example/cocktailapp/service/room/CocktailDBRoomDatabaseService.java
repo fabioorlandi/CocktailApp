@@ -14,6 +14,8 @@ import com.example.cocktailapp.model.converter.DateConverter;
 @Database(entities = {Cocktail.class, Ingredient.class}, version = 1)
 @TypeConverters({DateConverter.class, BitmapConverter.class})
 public abstract class CocktailDBRoomDatabaseService extends RoomDatabase {
+    public static final String DATABASE_NAME = "cocktail_database";
+
     public abstract CocktailDAO cocktailDAO();
 
     public abstract IngredientDAO ingredientDAO();

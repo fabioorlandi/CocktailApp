@@ -1,28 +1,20 @@
 package com.example.cocktailapp.ui;
 
 import android.os.Bundle;
-
-import com.example.cocktailapp.R;
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.view.View;
-
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
-import com.example.cocktailapp.databinding.ActivityMainBinding;
-
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.example.cocktailapp.R;
+import com.example.cocktailapp.databinding.ActivityMainBinding;
+import com.example.cocktailapp.viewmodel.MainActivityViewModel;
+
 public class MainActivity extends AppCompatActivity {
 
-    private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
+    private MainActivityViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,13 +25,8 @@ public class MainActivity extends AppCompatActivity {
 
         setSupportActionBar(binding.toolbar);
 
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "TESTEEEEEEEEEEEEEEE", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        viewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
+        viewModel.getData();
     }
 
     @Override
