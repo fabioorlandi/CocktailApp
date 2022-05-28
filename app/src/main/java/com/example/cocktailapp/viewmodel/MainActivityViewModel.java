@@ -11,19 +11,13 @@ import com.example.cocktailapp.service.CocktailDBRepository;
 
 import java.util.List;
 
-import javax.inject.Inject;
-
 public class MainActivityViewModel extends ViewModel {
-
-    @Inject
-    CocktailDBRepository repository;
-
-    private MediatorLiveData<List<Cocktail>> cocktailsObservable = new MediatorLiveData<List<Cocktail>>();
+        private MediatorLiveData<List<Cocktail>> cocktailsObservable = new MediatorLiveData<List<Cocktail>>();
 
     public MainActivityViewModel() {
         super();
 
-        cocktailsObservable.addSource(repository.getCocktailsObservable(), new Observer<List<Cocktail>>() {
+        cocktailsObservable.addSource(CocktailDBRepository.getInstance().getCocktailsObservable(), new Observer<List<Cocktail>>() {
             @Override
             public void onChanged(@Nullable List<Cocktail> cocktail) {
                 cocktailsObservable.setValue(cocktail);
@@ -32,7 +26,7 @@ public class MainActivityViewModel extends ViewModel {
     }
 
     public void getData() {
-        repository.fetchData();
+        CocktailDBRepository.getInstance().fetchData();
     }
 
     public LiveData<List<Cocktail>> getCocktailsObservable() {

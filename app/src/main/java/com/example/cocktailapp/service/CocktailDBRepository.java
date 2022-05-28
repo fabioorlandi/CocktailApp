@@ -5,7 +5,9 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
+import androidx.room.Room;
 
+import com.example.cocktailapp.app.CocktailApp;
 import com.example.cocktailapp.model.Cocktail;
 import com.example.cocktailapp.model.surrogate.CocktailSurrogate;
 import com.example.cocktailapp.service.retrofit.CocktailDBRetrofitService;
@@ -14,23 +16,34 @@ import com.example.cocktailapp.service.room.CocktailDBRoomDatabaseService;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class CocktailDBRepository {
-    @Inject
-    public CocktailDBRepository(CocktailDBRoomDatabaseService roomDatabaseService, CocktailDBRetrofitService retrofitService) {
-        this.roomDatabaseService = roomDatabaseService;
-        this.retrofitService = retrofitService;
+    private CocktailDBRepository() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(CocktailDBRetrofitService.BASE_URL)
+                .build();
+        retrofitService = retrofit.create(CocktailDBRetrofitService.class);
 
+        roomDatabaseService = Room.databaseBuilder(CocktailApp.getAppContext(), CocktailDBRoomDatabaseService.class, CocktailDBRoomDatabaseService.DATABASE_NAME)
+                .build();
     }
 
     private CocktailDBRoomDatabaseService roomDatabaseService;
     private CocktailDBRetrofitService retrofitService;
     private MutableLiveData<List<Cocktail>> cocktailsObservable = new MutableLiveData<List<Cocktail>>();
+
+    private static CocktailDBRepository repository;
+
+    public static CocktailDBRepository getInstance() {
+        if (repository == null)
+            repository = new CocktailDBRepository();
+
+        return repository;
+    }
 
     public void fetchData() {
         List<Cocktail> loadingList = null;
