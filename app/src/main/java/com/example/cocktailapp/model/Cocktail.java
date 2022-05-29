@@ -14,7 +14,7 @@ import java.util.List;
 
 @Entity
 public class Cocktail {
-    @PrimaryKey
+    @PrimaryKey()
     public Long cocktailId;
 
     @ColumnInfo(name = "cocktail_name")
@@ -41,7 +41,4 @@ public class Cocktail {
 
     @ColumnInfo(name = "date_modified")
     public Date dateModified;
-
-    @Ignore
-    public List<Ingredient> ingredients;
 }

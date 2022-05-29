@@ -1,8 +1,8 @@
 package com.example.cocktailapp.model;
 
 import androidx.room.ColumnInfo;
-import androidx.room.Embedded;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity
@@ -23,9 +23,6 @@ public class Ingredient {
     @ColumnInfo(name = "is_alcoholic")
     public Boolean isAlcoholic;
 
-    @ColumnInfo(name = "quantity")
-    public String quantity;
-
     @ColumnInfo(name = "alcohol_by_volume")
-    public Integer ABV;
+    public Double ABV;
 }

@@ -60,7 +60,6 @@ public class CocktailSurrogate {
         cocktail.directions = strInstructions;
         cocktail.thumbnail = this.createBitmap(strDrinkThumb);
         cocktail.image = this.createBitmap(strImageSource);
-        cocktail.ingredients = this.createIngredients();
         cocktail.dateModified = this.getDate(dateModified);
 
         return cocktail;
@@ -89,93 +88,6 @@ public class CocktailSurrogate {
         return bitmap[0];
     }
 
-    private List<Ingredient> createIngredients() {
-        List<Ingredient> ingredients = new ArrayList<>();
-
-        Ingredient ingredient;
-
-        if (strIngredient1 != null) {
-            ingredient = new Ingredient();
-            ingredient.name = strIngredient1;
-            ingredient.quantity = strMeasure1;
-
-            ingredients.add(ingredient);
-        }
-
-        if (strIngredient2 != null) {
-            ingredient = new Ingredient();
-            ingredient.name = strIngredient2;
-            ingredient.quantity = strMeasure2;
-
-            ingredients.add(ingredient);
-        }
-
-        if (strIngredient3 != null) {
-            ingredient = new Ingredient();
-            ingredient.name = strIngredient3;
-            ingredient.quantity = strMeasure3;
-
-            ingredients.add(ingredient);
-        }
-
-        if (strIngredient4 != null) {
-            ingredient = new Ingredient();
-            ingredient.name = strIngredient4;
-            ingredient.quantity = strMeasure4;
-
-            ingredients.add(ingredient);
-        }
-
-        if (strIngredient5 != null) {
-            ingredient = new Ingredient();
-            ingredient.name = strIngredient5;
-            ingredient.quantity = strMeasure5;
-
-            ingredients.add(ingredient);
-        }
-
-        if (strIngredient6 != null) {
-            ingredient = new Ingredient();
-            ingredient.name = strIngredient6;
-            ingredient.quantity = strMeasure6;
-
-            ingredients.add(ingredient);
-        }
-
-        if (strIngredient7 != null) {
-            ingredient = new Ingredient();
-            ingredient.name = strIngredient7;
-            ingredient.quantity = strMeasure7;
-
-            ingredients.add(ingredient);
-        }
-
-        if (strIngredient8 != null) {
-            ingredient = new Ingredient();
-            ingredient.name = strIngredient8;
-            ingredient.quantity = strMeasure8;
-
-            ingredients.add(ingredient);
-        }
-
-        if (strIngredient9 != null) {
-            ingredient = new Ingredient();
-            ingredient.name = strIngredient9;
-            ingredient.quantity = strMeasure9;
-
-            ingredients.add(ingredient);
-        }
-
-        if (strIngredient10 != null) {
-            ingredient = new Ingredient();
-            ingredient.name = strIngredient10;
-            ingredient.quantity = strMeasure10;
-
-            ingredients.add(ingredient);
-        }
-
-        return ingredients;
-    }
 
     private Date getDate(String dateModified) {
         if (dateModified != null) {

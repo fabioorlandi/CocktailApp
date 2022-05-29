@@ -15,6 +15,5 @@ public class CocktailWithIngredients {
             entityColumn = "ingredientId",
             associateBy = @Junction(CocktailIngredientCrossRef.class)
     )
-
     public List<Ingredient> ingredients;
 }

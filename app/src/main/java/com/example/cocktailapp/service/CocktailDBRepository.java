@@ -9,7 +9,9 @@ import androidx.room.Room;
 
 import com.example.cocktailapp.app.CocktailApp;
 import com.example.cocktailapp.model.Cocktail;
+import com.example.cocktailapp.model.CocktailWithIngredients;
 import com.example.cocktailapp.model.Ingredient;
+import com.example.cocktailapp.model.IngredientWithQuantity;
 import com.example.cocktailapp.model.base.Resource;
 import com.example.cocktailapp.model.base.Status;
 import com.example.cocktailapp.model.surrogate.CocktailSurrogate;
@@ -41,8 +43,8 @@ public class CocktailDBRepository {
 
     private CocktailDBRoomDatabaseService roomDatabaseService;
     private CocktailDBRetrofitService retrofitService;
-    private MutableLiveData<Resource<List<Cocktail>>> cocktailsObservable = new MutableLiveData<>();
-    private MutableLiveData<Resource<List<Ingredient>>> ingredientsObservable = new MutableLiveData<>();
+    private MutableLiveData<Resource<List<CocktailWithIngredients>>> cocktailsObservable = new MutableLiveData<>();
+    private MutableLiveData<Resource<List<IngredientWithQuantity>>> ingredientsObservable = new MutableLiveData<>();
     private Status pendingStatus;
 
     private static CocktailDBRepository repository;
@@ -58,17 +60,17 @@ public class CocktailDBRepository {
         pendingStatus = Status.LOADING;
 
         this.loadCocktailsFromDB();
-        this.loadCocktailsFromAPI();
-
         this.loadIngredientsFromDB();
+
+        this.loadCocktailsFromAPI();
         this.loadIngredientsFromAPI();
     }
 
-    public MutableLiveData<Resource<List<Cocktail>>> getCocktailsObservable() {
+    public MutableLiveData<Resource<List<CocktailWithIngredients>>> getCocktailsObservable() {
         return cocktailsObservable;
     }
 
-    public MutableLiveData<Resource<List<Ingredient>>> getIngredientsObservable() {
+    public MutableLiveData<Resource<List<IngredientWithQuantity>>> getIngredientsObservable() {
         return ingredientsObservable;
     }
 
@@ -127,7 +129,7 @@ public class CocktailDBRepository {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-                List<Cocktail> cocktails = roomDatabaseService.cocktailDAO().getAllCocktails();
+                List<CocktailWithIngredients> cocktails = roomDatabaseService.cocktailDAO().getAllCocktails();
 
                 if (cocktails != null && cocktails.size() > 0) {
                     setCocktailsObservableData(cocktails, null);
@@ -136,7 +138,7 @@ public class CocktailDBRepository {
         });
     }
 
-    private void setCocktailsObservableData(List<Cocktail> cocktails, String message) {
+    private void setCocktailsObservableData(List<CocktailWithIngredients> cocktails, String message) {
         Status loadingStatus = pendingStatus;
         if (cocktailsObservable.getValue() != null) {
             loadingStatus = cocktailsObservable.getValue().status;
@@ -175,7 +177,7 @@ public class CocktailDBRepository {
                                                 if (surrogate != null)
                                                     ingredients.add(surrogate.toIngredient());
                                             }
-                                            
+
                                             addIngredientsToDB(ingredients);
                                         } else
                                             pendingStatus = Status.ERROR;
@@ -226,7 +228,7 @@ public class CocktailDBRepository {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-                List<Ingredient> ingredients = roomDatabaseService.ingredientDAO().getAllIngredients();
+                List<IngredientWithQuantity> ingredients = roomDatabaseService.ingredientDAO().getAllIngredients();
 
                 if (ingredients != null && ingredients.size() > 0) {
                     setIngredientsObservableData(ingredients, null);
@@ -235,7 +237,7 @@ public class CocktailDBRepository {
         });
     }
 
-    private void setIngredientsObservableData(List<Ingredient> ingredients, String message) {
+    private void setIngredientsObservableData(List<IngredientWithQuantity> ingredients, String message) {
         Status loadingStatus = pendingStatus;
         if (ingredientsObservable.getValue() != null) {
             loadingStatus = ingredientsObservable.getValue().status;
