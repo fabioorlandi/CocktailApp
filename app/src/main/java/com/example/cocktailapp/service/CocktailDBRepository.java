@@ -9,7 +9,10 @@ import androidx.room.Room;
 
 import com.example.cocktailapp.app.CocktailApp;
 import com.example.cocktailapp.model.Cocktail;
+import com.example.cocktailapp.model.base.Resource;
+import com.example.cocktailapp.model.base.Status;
 import com.example.cocktailapp.model.surrogate.CocktailSurrogate;
+import com.example.cocktailapp.service.retrofit.CocktailDBResult;
 import com.example.cocktailapp.service.retrofit.CocktailDBRetrofitService;
 import com.example.cocktailapp.service.room.CocktailDBRoomDatabaseService;
 
@@ -20,11 +23,13 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CocktailDBRepository {
     private CocktailDBRepository() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(CocktailDBRetrofitService.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
                 .build();
         retrofitService = retrofit.create(CocktailDBRetrofitService.class);
 
@@ -34,7 +39,8 @@ public class CocktailDBRepository {
 
     private CocktailDBRoomDatabaseService roomDatabaseService;
     private CocktailDBRetrofitService retrofitService;
-    private MutableLiveData<List<Cocktail>> cocktailsObservable = new MutableLiveData<List<Cocktail>>();
+    private MutableLiveData<Resource<List<Cocktail>>> cocktailsObservable = new MutableLiveData<>();
+    private Status pendingStatus;
 
     private static CocktailDBRepository repository;
 
@@ -46,19 +52,13 @@ public class CocktailDBRepository {
     }
 
     public void fetchData() {
-        List<Cocktail> loadingList = null;
-
-        if (cocktailsObservable.getValue() != null) {
-            loadingList = cocktailsObservable.getValue();
-        }
-
-        cocktailsObservable.setValue(loadingList);
+        pendingStatus = Status.LOADING;
 
         this.loadCocktailsFromDB();
         this.loadCocktailsFromAPI();
     }
 
-    public MutableLiveData<List<Cocktail>> getCocktailsObservable() {
+    public MutableLiveData<Resource<List<Cocktail>>> getCocktailsObservable() {
         return cocktailsObservable;
     }
 
@@ -66,25 +66,29 @@ public class CocktailDBRepository {
         List<Cocktail> cocktails = new ArrayList<>();
 
         for (char letter = 'a'; letter <= 'z'; letter++) {
-            retrofitService.getCocktailsByFirstLetter(Character.toString(letter)).enqueue(new Callback<List<CocktailSurrogate>>() {
+            retrofitService.getCocktailsByFirstLetter(Character.toString(letter)).enqueue(new Callback<CocktailDBResult>() {
                 @Override
-                public void onResponse(@NonNull Call<List<CocktailSurrogate>> call, @NonNull Response<List<CocktailSurrogate>> response) {
+                public void onResponse(@NonNull Call<CocktailDBResult> call, @NonNull Response<CocktailDBResult> response) {
                     if (response.isSuccessful()) {
-                        assert response.body() != null;
-                        for (CocktailSurrogate surrogate : response.body()) {
-                            cocktails.add(surrogate.toCocktail());
-                        }
+                        pendingStatus = Status.SUCCESS;
+                        if (response.body() != null && ((CocktailDBResult) response.body()).drinks != null)
+                            for (CocktailSurrogate surrogate : ((CocktailDBResult) response.body()).drinks) {
+                                if (surrogate != null)
+                                    cocktails.add(surrogate.toCocktail());
+                            }
+
+                        addCocktailsToDB(cocktails);
                     }
+                    else
+                        pendingStatus = Status.ERROR;
                 }
 
                 @Override
-                public void onFailure(@NonNull Call<List<CocktailSurrogate>> call, @NonNull Throwable t) {
+                public void onFailure(@NonNull Call<CocktailDBResult> call, @NonNull Throwable t) {
                     Log.d("API_ERROR", "Error fetching data", t);
                 }
             });
         }
-
-        this.addCocktailsToDB(cocktails);
     }
 
     private void addCocktailsToDB(List<Cocktail> cocktails) {
@@ -117,15 +121,28 @@ public class CocktailDBRepository {
                 List<Cocktail> cocktails = roomDatabaseService.cocktailDAO().getAllCocktails();
 
                 if (cocktails != null && cocktails.size() > 0) {
-                    setCocktailsObservableData(cocktails);
+                    setCocktailsObservableData(cocktails, null);
                 }
             }
         });
     }
 
-    private void setCocktailsObservableData(List<Cocktail> cocktails) {
+    private void setCocktailsObservableData(List<Cocktail> cocktails, String message) {
+        Status loadingStatus = pendingStatus;
         if (cocktailsObservable.getValue() != null) {
-            cocktailsObservable.setValue(cocktails);
+            loadingStatus = cocktailsObservable.getValue().status;
+        }
+
+        switch (loadingStatus) {
+            case LOADING:
+                cocktailsObservable.setValue(Resource.loading(cocktails));
+                break;
+            case ERROR:
+                cocktailsObservable.setValue(Resource.error(message, cocktails));
+                break;
+            case SUCCESS:
+                cocktailsObservable.setValue(Resource.success(cocktails));
+                break;
         }
     }
 }

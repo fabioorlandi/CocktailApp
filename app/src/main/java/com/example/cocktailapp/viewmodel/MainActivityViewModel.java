@@ -7,19 +7,20 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
 import com.example.cocktailapp.model.Cocktail;
+import com.example.cocktailapp.model.base.Resource;
 import com.example.cocktailapp.service.CocktailDBRepository;
 
 import java.util.List;
 
 public class MainActivityViewModel extends ViewModel {
-        private MediatorLiveData<List<Cocktail>> cocktailsObservable = new MediatorLiveData<List<Cocktail>>();
+    private MediatorLiveData<Resource<List<Cocktail>>> cocktailsObservable = new MediatorLiveData<>();
 
     public MainActivityViewModel() {
         super();
 
-        cocktailsObservable.addSource(CocktailDBRepository.getInstance().getCocktailsObservable(), new Observer<List<Cocktail>>() {
+        cocktailsObservable.addSource(CocktailDBRepository.getInstance().getCocktailsObservable(), new Observer<Resource<List<Cocktail>>>() {
             @Override
-            public void onChanged(@Nullable List<Cocktail> cocktail) {
+            public void onChanged(@Nullable Resource<List<Cocktail>> cocktail) {
                 cocktailsObservable.setValue(cocktail);
             }
         });
@@ -29,7 +30,7 @@ public class MainActivityViewModel extends ViewModel {
         CocktailDBRepository.getInstance().fetchData();
     }
 
-    public LiveData<List<Cocktail>> getCocktailsObservable() {
+    public LiveData<Resource<List<Cocktail>>> getCocktailsObservable() {
         return cocktailsObservable;
     }
 }

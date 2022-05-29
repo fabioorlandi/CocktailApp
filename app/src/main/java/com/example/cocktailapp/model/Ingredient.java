@@ -23,8 +23,8 @@ public class Ingredient {
     @ColumnInfo(name = "is_alcoholic")
     public Boolean isAlcoholic;
 
-    @Embedded
-    public Quantity quantity;
+    @ColumnInfo(name = "quantity")
+    public String quantity;
 
     @ColumnInfo(name = "alcohol_by_volume")
     public Integer ABV;
