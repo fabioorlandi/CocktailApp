@@ -9,4 +9,10 @@ public interface CocktailDBRetrofitService {
 
     @GET("search.php?")
     Call<CocktailDBResult> getCocktailsByFirstLetter(@Query("f") String letter);
+
+    @GET("list.php?i=list")
+    Call<CocktailDBResult> getAllIngredientsNames();
+
+    @GET("search.php?")
+    Call<CocktailDBResult> getIngredientsByName(@Query("i") String name);
 }
