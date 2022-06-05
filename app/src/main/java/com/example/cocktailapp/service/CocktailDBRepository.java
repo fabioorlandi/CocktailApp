@@ -146,13 +146,13 @@ public class CocktailDBRepository {
 
         switch (loadingStatus) {
             case LOADING:
-                cocktailsObservable.setValue(Resource.loading(cocktails));
+                cocktailsObservable.postValue(Resource.loading(cocktails));
                 break;
             case ERROR:
-                cocktailsObservable.setValue(Resource.error(message, cocktails));
+                cocktailsObservable.postValue(Resource.error(message, cocktails));
                 break;
             case SUCCESS:
-                cocktailsObservable.setValue(Resource.success(cocktails));
+                cocktailsObservable.postValue(Resource.success(cocktails));
                 break;
         }
     }
@@ -245,13 +245,13 @@ public class CocktailDBRepository {
 
         switch (loadingStatus) {
             case LOADING:
-                ingredientsObservable.setValue(Resource.loading(ingredients));
+                ingredientsObservable.postValue(Resource.loading(ingredients));
                 break;
             case ERROR:
-                ingredientsObservable.setValue(Resource.error(message, ingredients));
+                ingredientsObservable.postValue(Resource.error(message, ingredients));
                 break;
             case SUCCESS:
-                ingredientsObservable.setValue(Resource.success(ingredients));
+                ingredientsObservable.postValue(Resource.success(ingredients));
                 break;
         }
     }
