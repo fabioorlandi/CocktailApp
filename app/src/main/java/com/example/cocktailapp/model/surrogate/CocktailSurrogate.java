@@ -2,11 +2,14 @@ package com.example.cocktailapp.model.surrogate;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.Log;
 
 import com.example.cocktailapp.model.Cocktail;
 import com.example.cocktailapp.model.Ingredient;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,9 +69,27 @@ public class CocktailSurrogate {
     }
 
     private Bitmap createBitmap(String imageURL) {
-        final Bitmap[] bitmap = new Bitmap[1];
+        final Bitmap[] bitmaps = new Bitmap[1];
 
-        AsyncTask.execute(new Runnable() {
+//        Picasso.with(this)
+//                .load(imageURL)
+//                .into(new Target() {
+//                    @Override
+//                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+//                        bitmaps[0] = bitmap;
+//                    }
+//
+//                    @Override
+//                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+//                        Log.d("BITMAP_CREATION_ERROR", "Error creating Bitmap");
+//                    }
+//
+//                    @Override
+//                    public void onPrepareLoad(Drawable placeHolderDrawable) {
+//                    }
+//                });
+
+         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -77,21 +98,21 @@ public class CocktailSurrogate {
                     connection.setDoInput(true);
                     connection.connect();
                     InputStream input = connection.getInputStream();
-                    bitmap[0] = BitmapFactory.decodeStream(input);
+                    bitmaps[0] = BitmapFactory.decodeStream(input);
                 } catch (IOException e) {
                     Log.d("BITMAP_CREATION_ERROR", "Error creating Bitmap");
-                    bitmap[0] = null;
+                    bitmaps[0] = null;
                 }
             }
         });
 
-        return bitmap[0];
+        return bitmaps[0];
     }
 
 
     private Date getDate(String dateModified) {
         if (dateModified != null) {
-            SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US);
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
             try {
                 return format.parse(dateModified);
             } catch (ParseException e) {
