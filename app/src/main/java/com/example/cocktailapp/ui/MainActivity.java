@@ -2,7 +2,9 @@ package com.example.cocktailapp.ui;
 
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.SearchView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -63,28 +65,56 @@ public class MainActivity extends AppCompatActivity {
                     pullToRefresh.setRefreshing(false);
                 }
 
-                if (cocktails.data != null) {
+                if (cocktails.data != null && !compareLists(cocktailAdapter.getCocktailsShown(), cocktails.data)) {
                     cocktailAdapter.setCocktailsToShow(cocktails.data);
+                    pullToRefresh.setRefreshing(false);
                 }
             }
         });
     }
 
+    private boolean compareLists(List<CocktailWithIngredients> baseList, List<CocktailWithIngredients> newList) {
+        boolean areSame = true;
+        if (baseList == null) {
+            areSame = false;
+        } else {
+            for (CocktailWithIngredients item : newList) {
+                if (!baseList.contains(item)) {
+                    areSame = false;
+                    break;
+                }
+            }
+        }
+        return areSame;
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                cocktailAdapter.getFilter().filter(newText);
+                return false;
+            }
+        });
+
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             viewModel.getCocktailsObservable();
         }

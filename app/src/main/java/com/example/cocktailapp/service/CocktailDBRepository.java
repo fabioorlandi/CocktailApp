@@ -46,6 +46,7 @@ public class CocktailDBRepository {
     private MutableLiveData<Resource<List<CocktailWithIngredients>>> cocktailsObservable = new MutableLiveData<>();
     private MutableLiveData<Resource<List<IngredientWithQuantity>>> ingredientsObservable = new MutableLiveData<>();
     private Status pendingStatus;
+    private Integer cocktailsAPICalls;
 
     private static CocktailDBRepository repository;
 
@@ -77,11 +78,14 @@ public class CocktailDBRepository {
     private void loadCocktailsFromAPI() {
         List<Cocktail> cocktails = new ArrayList<>();
 
+        cocktailsAPICalls = 0;
+
         for (char letter = 'a'; letter <= 'z'; letter++) {
             retrofitService.getCocktailsByFirstLetter(Character.toString(letter)).enqueue(new Callback<CocktailDBResult>() {
                 @Override
                 public void onResponse(@NonNull Call<CocktailDBResult> call, @NonNull Response<CocktailDBResult> response) {
                     if (response.isSuccessful()) {
+                        cocktailsAPICalls++;
                         pendingStatus = Status.SUCCESS;
                         if (response.body() != null && ((CocktailDBResult) response.body()).drinks != null)
                             for (CocktailSurrogate surrogate : ((CocktailDBResult) response.body()).drinks) {
@@ -89,6 +93,7 @@ public class CocktailDBRepository {
                                     cocktails.add(surrogate.toCocktail());
                             }
 
+                        //if (cocktailsAPICalls > 26)
                         addCocktailsToDB(cocktails);
                     } else
                         pendingStatus = Status.ERROR;

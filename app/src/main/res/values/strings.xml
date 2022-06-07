@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">CocktailApp</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">Configurações</string>
     <string name="cocktail">Bebida</string>
     <string name="categoryIBA">Categoria</string>
     <string name="directions">Instruções</string>
+    <string name="search">Pesquisar</string>
+    <string name="cocktails">Bebidas</string>
 </resources>
