@@ -19,17 +19,17 @@ public interface CocktailDAO {
     @Query("SELECT * FROM cocktail")
     List<CocktailWithIngredients> getAllCocktails();
 
+    @Query("SELECT * FROM cocktail WHERE cocktailId = :id")
+    CocktailWithIngredients getCocktail(Long id);
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     Long insertCocktail(Cocktail cocktail);
 
     @Update
     Integer updateCocktail(Cocktail cocktail);
 
-    @Query("UPDATE cocktail SET edited_by_user = 1, cocktail_name = :name, directions = :directions WHERE cocktailId = :id")
-    Integer updateCocktail(Long id, String name, String directions);
-
-    @Query("UPDATE cocktail SET deleted_by_user = 1 WHERE cocktailId = :id")
-    void deleteCocktail(Long id);
+    @Delete
+    void deleteCocktail(Cocktail cocktail);
 
     @Query("DELETE FROM cocktail")
     void drop();

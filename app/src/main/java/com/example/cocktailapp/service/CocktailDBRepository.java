@@ -68,11 +68,27 @@ public class CocktailDBRepository {
     }
 
     public void updateCocktail(Long id, String name, String directions) {
-        roomDatabaseService.cocktailDAO().updateCocktail(id, name, directions);
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                CocktailWithIngredients cocktailWithIngredients = roomDatabaseService.cocktailDAO().getCocktail(id);
+                cocktailWithIngredients.cocktail.name = name;
+                cocktailWithIngredients.cocktail.directions = directions;
+                roomDatabaseService.cocktailDAO().updateCocktail(cocktailWithIngredients.cocktail);
+                fetchData();
+            }
+        });
     }
 
     public void deleteCocktail(Long id) {
-        roomDatabaseService.cocktailDAO().deleteCocktail(id);
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                CocktailWithIngredients cocktailWithIngredients = roomDatabaseService.cocktailDAO().getCocktail(id);
+                roomDatabaseService.cocktailDAO().deleteCocktail(cocktailWithIngredients.cocktail);
+                fetchData();
+            }
+        });
     }
 
     public MutableLiveData<Resource<List<CocktailWithIngredients>>> getCocktailsObservable() {

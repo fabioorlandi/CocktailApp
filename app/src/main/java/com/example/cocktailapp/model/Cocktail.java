@@ -41,10 +41,4 @@ public class Cocktail {
 
     @ColumnInfo(name = "date_modified")
     public Date dateModified;
-
-    @ColumnInfo(name = "edited_by_user")
-    public Boolean editedByUser;
-
-    @ColumnInfo(name = "deleted_by_user")
-    public Boolean deletedByUser;
 }
