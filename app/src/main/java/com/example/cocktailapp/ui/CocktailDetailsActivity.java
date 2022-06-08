@@ -1,5 +1,9 @@
 package com.example.cocktailapp.ui;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
@@ -22,6 +26,24 @@ public class CocktailDetailsActivity extends AppCompatActivity {
     private TextView cocktailName, IBACategory, directions;
     private ImageView thumbnail;
 
+    public ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    switch (result.getResultCode()) {
+                        case 4:
+                            Long id = result.getData().getExtras().getLong("ID");
+                            String editedName = result.getData().getExtras().getString("EditedCocktailName");
+                            String editedDirections = result.getData().getExtras().getString("EditedDirections");
+                            cocktailName.setText(editedName);
+                            directions.setText(editedDirections);
+                            break;
+                    }
+                }
+            }
+    );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,11 +57,13 @@ public class CocktailDetailsActivity extends AppCompatActivity {
         this.thumbnail = findViewById(R.id.cocktail_thumb_details_id);
 
         Intent intent = getIntent();
+        Long id = intent.getExtras().getLong("ID");
         String cocktailName = intent.getExtras().getString("CocktailName");
         String IBACategory = intent.getExtras().getString("IBACategory");
         String directions = intent.getExtras().getString("Directions");
         Bitmap thumbnail = intent.getParcelableExtra("Thumbnail");
 
+        this.id = id.toString();
         this.cocktailName.setText(cocktailName);
         this.IBACategory.setText(IBACategory);
         this.directions.setText(directions);
@@ -50,7 +74,22 @@ public class CocktailDetailsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
+                Intent resultIntent = new Intent();
+                resultIntent.putExtra("ID", Long.parseLong(this.id));
+                resultIntent.putExtra("EditedCocktailName", this.cocktailName.getText().toString());
+                resultIntent.putExtra("EditedDirections", this.directions.getText().toString());
+                setResult(CocktailActivityResult.UPDATE.getValue(), resultIntent);
+
                 finish();
+                return true;
+            case R.id.action_edit:
+                Intent intent = new Intent(this, CocktailEditDetailsActivity.class);
+                intent.putExtra("ID", Long.parseLong(this.id));
+                intent.putExtra("Thumbnail", this.thumbnail.getDrawingCache());
+                intent.putExtra("CocktailName", this.cocktailName.getText().toString());
+                intent.putExtra("Directions", this.directions.getText().toString());
+
+                activityResultLauncher.launch(intent);
                 return true;
             case R.id.action_delete:
                 new AlertDialog.Builder(this)

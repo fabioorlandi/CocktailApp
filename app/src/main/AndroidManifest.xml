@@ -20,6 +20,9 @@
             android:name=".ui.CocktailDetailsActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.CocktailEditDetailsActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.MainActivity"
             android:exported="true"
             android:label="@string/app_name"

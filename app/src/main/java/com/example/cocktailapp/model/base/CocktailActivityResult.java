@@ -1,7 +1,7 @@
 package com.example.cocktailapp.model.base;
 
 public enum CocktailActivityResult {
-    UPDATE(1), DELETE(2);
+    UPDATE(1), DELETE(2), SAVE(4);
 
     private final int value;
 

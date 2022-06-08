@@ -10,4 +10,7 @@
     <string name="delete">Excluir</string>
     <string name="delete_dialog_title">Excluir bebida</string>
     <string name="delete_dialog_message">Deseja realmente excluir esta bebida?\nA ação terá efeito apenas neste dispositivo!</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Salvar</string>
+    <string name="operation_canceled">"Operação cancelada!"</string>
 </resources>

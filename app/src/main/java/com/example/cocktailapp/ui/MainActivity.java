@@ -52,8 +52,8 @@ public class MainActivity extends AppCompatActivity {
                     switch (result.getResultCode()) {
                         case 1:
                             Long id = result.getData().getExtras().getLong("ID");
-                            String name = result.getData().getExtras().getString("CocktailName");
-                            String directions = result.getData().getExtras().getString("Directions");
+                            String name = result.getData().getExtras().getString("EditedCocktailName");
+                            String directions = result.getData().getExtras().getString("EditedDirections");
                             viewModel.updateCocktail(id, name, directions);
                             break;
                         case 2:
