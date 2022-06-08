@@ -10,8 +10,8 @@
         app:actionViewClass="android.widget.SearchView"/>
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_sync_from_API"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="@string/sync_from_API"
         app:showAsAction="never" />
 </menu>

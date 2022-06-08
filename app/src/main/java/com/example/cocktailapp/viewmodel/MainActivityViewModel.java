@@ -40,6 +40,10 @@ public class MainActivityViewModel extends ViewModel {
         CocktailDBRepository.getInstance().fetchData();
     }
 
+    public void syncData() {
+        CocktailDBRepository.getInstance().syncData();
+    }
+
     public void updateCocktail(Long id, String name, String directions) {
         CocktailDBRepository.getInstance().updateCocktail(id, name, directions);
     }

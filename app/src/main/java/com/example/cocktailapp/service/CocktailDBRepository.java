@@ -67,6 +67,18 @@ public class CocktailDBRepository {
         this.loadIngredientsFromAPI();
     }
 
+    public void syncData() {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                roomDatabaseService.cocktailDAO().drop();
+                roomDatabaseService.ingredientDAO().drop();
+
+                fetchData();
+            }
+        });
+    }
+
     public void updateCocktail(Long id, String name, String directions) {
         AsyncTask.execute(new Runnable() {
             @Override
@@ -104,8 +116,8 @@ public class CocktailDBRepository {
 
         cocktailsAPICalls = 0;
 
-        for (char letter = 'a'; letter <= 'z'; letter++) {
-            retrofitService.getCocktailsByFirstLetter(Character.toString(letter)).enqueue(new Callback<CocktailDBResult>() {
+//        for (char letter = 'a'; letter <= 'z'; letter++) {
+            retrofitService.getCocktailsByFirstLetter(Character.toString('a')).enqueue(new Callback<CocktailDBResult>() {
                 @Override
                 public void onResponse(@NonNull Call<CocktailDBResult> call, @NonNull Response<CocktailDBResult> response) {
                     if (response.isSuccessful()) {
@@ -117,7 +129,7 @@ public class CocktailDBRepository {
                                     cocktails.add(surrogate.toCocktail());
                             }
 
-                        if (cocktailsAPICalls > 26)
+//                        if (cocktailsAPICalls > 26)
                             addCocktailsToDB(cocktails);
                     } else
                         pendingStatus = Status.ERROR;
@@ -128,7 +140,7 @@ public class CocktailDBRepository {
                     Log.d("API_ERROR", "Error fetching cocktails data", t);
                 }
             });
-        }
+//        }
     }
 
     private void addCocktailsToDB(List<Cocktail> cocktails) {

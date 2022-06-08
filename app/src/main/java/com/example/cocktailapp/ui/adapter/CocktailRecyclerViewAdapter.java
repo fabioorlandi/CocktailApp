@@ -67,7 +67,7 @@ public class CocktailRecyclerViewAdapter extends RecyclerView.Adapter<CocktailRe
                 intent.putExtra("IBACategory", filteredCocktails.get(holder.getAdapterPosition()).cocktail.IBACategory);
                 intent.putExtra("Directions", filteredCocktails.get(holder.getAdapterPosition()).cocktail.directions);
 
-                ((MainActivity)context).activityResultLauncher.launch(intent);
+                ((MainActivity) context).activityResultLauncher.launch(intent);
             }
         });
     }
@@ -110,9 +110,11 @@ public class CocktailRecyclerViewAdapter extends RecyclerView.Adapter<CocktailRe
 
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            filteredCocktails.clear();
-            filteredCocktails.addAll((List) results.values);
-            notifyDataSetChanged();
+            if (filteredCocktails != null) {
+                filteredCocktails.clear();
+                filteredCocktails.addAll((List) results.values);
+                notifyDataSetChanged();
+            }
         }
     };
 
