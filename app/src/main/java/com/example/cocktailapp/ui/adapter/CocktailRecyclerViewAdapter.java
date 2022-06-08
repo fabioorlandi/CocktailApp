@@ -18,6 +18,7 @@ import com.example.cocktailapp.R;
 import com.example.cocktailapp.model.Cocktail;
 import com.example.cocktailapp.model.CocktailWithIngredients;
 import com.example.cocktailapp.ui.CocktailDetailsActivity;
+import com.example.cocktailapp.ui.MainActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,12 +61,13 @@ public class CocktailRecyclerViewAdapter extends RecyclerView.Adapter<CocktailRe
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, CocktailDetailsActivity.class);
+                intent.putExtra("ID", filteredCocktails.get(holder.getAdapterPosition()).cocktail.cocktailId);
                 intent.putExtra("Thumbnail", filteredCocktails.get(holder.getAdapterPosition()).cocktail.thumbnail);
                 intent.putExtra("CocktailName", filteredCocktails.get(holder.getAdapterPosition()).cocktail.name);
                 intent.putExtra("IBACategory", filteredCocktails.get(holder.getAdapterPosition()).cocktail.IBACategory);
                 intent.putExtra("Directions", filteredCocktails.get(holder.getAdapterPosition()).cocktail.directions);
 
-                context.startActivity(intent);
+                ((MainActivity)context).activityResultLauncher.launch(intent);
             }
         });
     }

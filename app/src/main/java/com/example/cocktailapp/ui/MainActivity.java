@@ -1,13 +1,22 @@
 package com.example.cocktailapp.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.SearchView;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -17,6 +26,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.example.cocktailapp.R;
 import com.example.cocktailapp.databinding.ActivityMainBinding;
 import com.example.cocktailapp.model.CocktailWithIngredients;
+import com.example.cocktailapp.model.base.CocktailActivityResult;
 import com.example.cocktailapp.model.base.Resource;
 import com.example.cocktailapp.model.base.Status;
 import com.example.cocktailapp.ui.adapter.CocktailRecyclerViewAdapter;
@@ -26,10 +36,33 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int UPDATE_COCKTAIL_RESULT = CocktailActivityResult.UPDATE.getValue();
+    private static final int DELETE_COCKTAIL_RESULT = CocktailActivityResult.DELETE.getValue();
+
     private ActivityMainBinding binding;
     private MainActivityViewModel viewModel;
     private SwipeRefreshLayout pullToRefresh;
     private CocktailRecyclerViewAdapter cocktailAdapter;
+
+    public ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    switch (result.getResultCode()) {
+                        case 1:
+                            Long id = result.getData().getExtras().getLong("ID");
+                            String name = result.getData().getExtras().getString("CocktailName");
+                            String directions = result.getData().getExtras().getString("Directions");
+                            viewModel.updateCocktail(id, name, directions);
+                            break;
+                        case 2:
+                            viewModel.deleteCocktail(result.getData().getExtras().getLong("ID"));
+                            break;
+                    }
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

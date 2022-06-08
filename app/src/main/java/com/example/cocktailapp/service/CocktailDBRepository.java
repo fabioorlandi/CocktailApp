@@ -67,6 +67,14 @@ public class CocktailDBRepository {
         this.loadIngredientsFromAPI();
     }
 
+    public void updateCocktail(Long id, String name, String directions) {
+        roomDatabaseService.cocktailDAO().updateCocktail(id, name, directions);
+    }
+
+    public void deleteCocktail(Long id) {
+        roomDatabaseService.cocktailDAO().deleteCocktail(id);
+    }
+
     public MutableLiveData<Resource<List<CocktailWithIngredients>>> getCocktailsObservable() {
         return cocktailsObservable;
     }

@@ -23,4 +23,7 @@ public interface IngredientDAO {
 
     @Update
     Integer updateIngredient(Ingredient ingredient);
+
+    @Query("DELETE FROM ingredient")
+    void drop();
 }

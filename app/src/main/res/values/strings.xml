@@ -2,8 +2,12 @@
     <string name="app_name">CocktailApp</string>
     <string name="action_settings">Configurações</string>
     <string name="cocktail">Bebida</string>
-    <string name="categoryIBA">Categoria</string>
+    <string name="IBA_category">Categoria</string>
     <string name="directions">Instruções</string>
     <string name="search">Pesquisar</string>
     <string name="cocktails">Bebidas</string>
+    <string name="edit">Editar</string>
+    <string name="delete">Excluir</string>
+    <string name="delete_dialog_title">Excluir bebida</string>
+    <string name="delete_dialog_message">Deseja realmente excluir esta bebida?\nA ação terá efeito apenas neste dispositivo!</string>
 </resources>

@@ -39,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:padding="8dp"
                 android:layout_marginTop="10dp"
-                android:text="@string/categoryIBA"/>
+                android:text="@string/IBA_category"/>
 
             <TextView
                 android:id="@+id/cocktail_direction_details_id"

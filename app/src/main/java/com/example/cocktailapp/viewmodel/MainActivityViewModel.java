@@ -40,6 +40,14 @@ public class MainActivityViewModel extends ViewModel {
         CocktailDBRepository.getInstance().fetchData();
     }
 
+    public void updateCocktail(Long id, String name, String directions) {
+        CocktailDBRepository.getInstance().updateCocktail(id, name, directions);
+    }
+
+    public void deleteCocktail(Long id) {
+        CocktailDBRepository.getInstance().deleteCocktail(id);
+    }
+
     public LiveData<Resource<List<CocktailWithIngredients>>> getCocktailsObservable() {
         return cocktailsObservable;
     }
