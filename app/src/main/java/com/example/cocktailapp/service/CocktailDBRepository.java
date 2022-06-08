@@ -75,7 +75,7 @@ public class CocktailDBRepository {
                 cocktailWithIngredients.cocktail.name = name;
                 cocktailWithIngredients.cocktail.directions = directions;
                 roomDatabaseService.cocktailDAO().updateCocktail(cocktailWithIngredients.cocktail);
-                fetchData();
+                loadIngredientsFromDB();
             }
         });
     }
@@ -86,7 +86,7 @@ public class CocktailDBRepository {
             public void run() {
                 CocktailWithIngredients cocktailWithIngredients = roomDatabaseService.cocktailDAO().getCocktail(id);
                 roomDatabaseService.cocktailDAO().deleteCocktail(cocktailWithIngredients.cocktail);
-                fetchData();
+                loadIngredientsFromDB();
             }
         });
     }
@@ -117,8 +117,8 @@ public class CocktailDBRepository {
                                     cocktails.add(surrogate.toCocktail());
                             }
 
-                        //if (cocktailsAPICalls > 26)
-                        addCocktailsToDB(cocktails);
+                        if (cocktailsAPICalls > 26)
+                            addCocktailsToDB(cocktails);
                     } else
                         pendingStatus = Status.ERROR;
                 }
