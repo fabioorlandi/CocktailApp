@@ -32,7 +32,13 @@ import com.example.cocktailapp.model.base.Status;
 import com.example.cocktailapp.ui.adapter.CocktailRecyclerViewAdapter;
 import com.example.cocktailapp.viewmodel.MainActivityViewModel;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -94,13 +100,19 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getCocktailsObservable().observe(MainActivity.this, new Observer<Resource<List<CocktailWithIngredients>>>() {
             @Override
             public void onChanged(@Nullable Resource<List<CocktailWithIngredients>> cocktails) {
-                if (cocktails.status != Status.LOADING) {
+                if (cocktails.status != Status.LOADING || (cocktailAdapter.getCocktailsShown() != null && cocktailAdapter.getCocktailsShown().size() > 0)) {
                     pullToRefresh.setRefreshing(false);
                 }
 
                 if (cocktails.data != null && !compareLists(cocktailAdapter.getCocktailsShown(), cocktails.data)) {
+                    cocktails.data.sort(new Comparator<CocktailWithIngredients>() {
+                        @Override
+                        public int compare(CocktailWithIngredients firstCocktail, CocktailWithIngredients secondCocktail) {
+                            return firstCocktail.cocktail.name.compareToIgnoreCase(secondCocktail.cocktail.name);
+                        }
+                    });
+
                     cocktailAdapter.setCocktailsToShow(cocktails.data);
-                    pullToRefresh.setRefreshing(false);
                 }
             }
         });
@@ -149,7 +161,8 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_sync_from_API) {
-            onRestart();
+            cocktailAdapter.setCocktailsToShow(new ArrayList<>());
+            pullToRefresh.setRefreshing(true);
             viewModel.syncData();
         }
 

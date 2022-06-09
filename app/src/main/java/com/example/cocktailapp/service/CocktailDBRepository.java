@@ -51,7 +51,6 @@ public class CocktailDBRepository {
     private MutableLiveData<Resource<List<CocktailWithIngredients>>> cocktailsObservable = new MutableLiveData<>();
     private MutableLiveData<Resource<List<IngredientWithQuantity>>> ingredientsObservable = new MutableLiveData<>();
     private Status pendingStatus;
-    private Integer cocktailsAPICalls;
 
     private static CocktailDBRepository repository;
 
@@ -86,7 +85,7 @@ public class CocktailDBRepository {
             protected void onPostExecute(Boolean result) {
                 fetchData();
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public void updateCocktail(Long id, String name, String directions) {
@@ -106,7 +105,7 @@ public class CocktailDBRepository {
             protected void onPostExecute(Boolean result) {
                 loadCocktailsFromDB();
             }
-        }.execute(id);
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, id);
     }
 
     public void deleteCocktail(Long id) {
@@ -124,7 +123,7 @@ public class CocktailDBRepository {
             protected void onPostExecute(Boolean result) {
                 loadCocktailsFromDB();
             }
-        }.execute(id);
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, id);
     }
 
     public MutableLiveData<Resource<List<CocktailWithIngredients>>> getCocktailsObservable() {
@@ -138,34 +137,30 @@ public class CocktailDBRepository {
     private void loadCocktailsFromAPI() {
         List<Cocktail> cocktails = new ArrayList<>();
 
-        cocktailsAPICalls = 0;
+        for (char letter = 'a'; letter <= 'z'; letter++) {
+            retrofitService.getCocktailsByFirstLetter(Character.toString(letter)).enqueue(new Callback<CocktailDBResult>() {
+                @Override
+                public void onResponse(@NonNull Call<CocktailDBResult> call, @NonNull Response<CocktailDBResult> response) {
+                    if (response.isSuccessful()) {
+                        pendingStatus = Status.SUCCESS;
+                        if (response.body() != null && ((CocktailDBResult) response.body()).drinks != null)
+                            for (CocktailSurrogate surrogate : ((CocktailDBResult) response.body()).drinks) {
+                                if (surrogate != null)
+                                    cocktails.add(surrogate.toCocktail());
+                            }
 
-//        for (char letter = 'a'; letter <= 'z'; letter++) {
-        retrofitService.getCocktailsByFirstLetter(Character.toString('a')).enqueue(new Callback<CocktailDBResult>() {
-            @Override
-            public void onResponse(@NonNull Call<CocktailDBResult> call, @NonNull Response<CocktailDBResult> response) {
-                if (response.isSuccessful()) {
-                    cocktailsAPICalls++;
-                    pendingStatus = Status.SUCCESS;
-                    if (response.body() != null && ((CocktailDBResult) response.body()).drinks != null)
-                        for (CocktailSurrogate surrogate : ((CocktailDBResult) response.body()).drinks) {
-                            if (surrogate != null)
-                                cocktails.add(surrogate.toCocktail());
-                        }
+                            addCocktailsToDB(cocktails);
+                    } else
+                        pendingStatus = Status.ERROR;
+                }
 
-//                        if (cocktailsAPICalls > 26)
-                    addCocktailsToDB(cocktails);
-                } else
+                @Override
+                public void onFailure(@NonNull Call<CocktailDBResult> call, @NonNull Throwable t) {
+                    Log.d("API_ERROR", "Error fetching cocktails data", t);
                     pendingStatus = Status.ERROR;
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<CocktailDBResult> call, @NonNull Throwable t) {
-                Log.d("API_ERROR", "Error fetching cocktails data", t);
-                pendingStatus = Status.ERROR;
-            }
-        });
-//        }
+                }
+            });
+        }
     }
 
     private void addCocktailsToDB(List<Cocktail> cocktails) {
@@ -211,10 +206,11 @@ public class CocktailDBRepository {
             protected void onPostExecute(List<CocktailWithIngredients> results) {
                 setCocktailsObservableData(results, null);
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    private void setCocktailsObservableData(List<CocktailWithIngredients> cocktails, String message) {
+    private void setCocktailsObservableData(List<CocktailWithIngredients> cocktails, String
+            message) {
         Status loadingStatus = pendingStatus;
         if (cocktailsObservable.getValue() != null) {
             loadingStatus = cocktailsObservable.getValue().status;
@@ -340,7 +336,7 @@ public class CocktailDBRepository {
             protected void onPostExecute(List<IngredientWithQuantity> results) {
                 setIngredientsObservableData(results, null);
             }
-        }.execute();
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private void setIngredientsObservableData
