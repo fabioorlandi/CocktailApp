@@ -149,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_sync_from_API) {
+            onRestart();
             viewModel.syncData();
         }
 

@@ -22,7 +22,9 @@ import com.example.cocktailapp.service.room.CocktailDBRoomDatabaseService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -31,9 +33,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CocktailDBRepository {
     private CocktailDBRepository() {
+        final OkHttpClient okHttpClient = new OkHttpClient();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(CocktailDBRetrofitService.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
+                .client(okHttpClient)
                 .build();
         retrofitService = retrofit.create(CocktailDBRetrofitService.class);
 
@@ -68,39 +73,58 @@ public class CocktailDBRepository {
     }
 
     public void syncData() {
-        AsyncTask.execute(new Runnable() {
+        new AsyncTask<Void, Void, Boolean>() {
             @Override
-            public void run() {
+            protected Boolean doInBackground(Void... voids) {
                 roomDatabaseService.cocktailDAO().drop();
                 roomDatabaseService.ingredientDAO().drop();
 
+                return true;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean result) {
                 fetchData();
             }
-        });
+        }.execute();
     }
 
     public void updateCocktail(Long id, String name, String directions) {
-        AsyncTask.execute(new Runnable() {
+        new AsyncTask<Long, Void, Boolean>() {
+
             @Override
-            public void run() {
+            protected Boolean doInBackground(Long... longs) {
                 CocktailWithIngredients cocktailWithIngredients = roomDatabaseService.cocktailDAO().getCocktail(id);
                 cocktailWithIngredients.cocktail.name = name;
                 cocktailWithIngredients.cocktail.directions = directions;
                 roomDatabaseService.cocktailDAO().updateCocktail(cocktailWithIngredients.cocktail);
-                loadIngredientsFromDB();
+
+                return true;
             }
-        });
+
+            @Override
+            protected void onPostExecute(Boolean result) {
+                loadCocktailsFromDB();
+            }
+        }.execute(id);
     }
 
     public void deleteCocktail(Long id) {
-        AsyncTask.execute(new Runnable() {
+        new AsyncTask<Long, Void, Boolean>() {
+
             @Override
-            public void run() {
+            protected Boolean doInBackground(Long... longs) {
                 CocktailWithIngredients cocktailWithIngredients = roomDatabaseService.cocktailDAO().getCocktail(id);
                 roomDatabaseService.cocktailDAO().deleteCocktail(cocktailWithIngredients.cocktail);
-                loadIngredientsFromDB();
+
+                return true;
             }
-        });
+
+            @Override
+            protected void onPostExecute(Boolean result) {
+                loadCocktailsFromDB();
+            }
+        }.execute(id);
     }
 
     public MutableLiveData<Resource<List<CocktailWithIngredients>>> getCocktailsObservable() {
@@ -117,38 +141,40 @@ public class CocktailDBRepository {
         cocktailsAPICalls = 0;
 
 //        for (char letter = 'a'; letter <= 'z'; letter++) {
-            retrofitService.getCocktailsByFirstLetter(Character.toString('a')).enqueue(new Callback<CocktailDBResult>() {
-                @Override
-                public void onResponse(@NonNull Call<CocktailDBResult> call, @NonNull Response<CocktailDBResult> response) {
-                    if (response.isSuccessful()) {
-                        cocktailsAPICalls++;
-                        pendingStatus = Status.SUCCESS;
-                        if (response.body() != null && ((CocktailDBResult) response.body()).drinks != null)
-                            for (CocktailSurrogate surrogate : ((CocktailDBResult) response.body()).drinks) {
-                                if (surrogate != null)
-                                    cocktails.add(surrogate.toCocktail());
-                            }
+        retrofitService.getCocktailsByFirstLetter(Character.toString('a')).enqueue(new Callback<CocktailDBResult>() {
+            @Override
+            public void onResponse(@NonNull Call<CocktailDBResult> call, @NonNull Response<CocktailDBResult> response) {
+                if (response.isSuccessful()) {
+                    cocktailsAPICalls++;
+                    pendingStatus = Status.SUCCESS;
+                    if (response.body() != null && ((CocktailDBResult) response.body()).drinks != null)
+                        for (CocktailSurrogate surrogate : ((CocktailDBResult) response.body()).drinks) {
+                            if (surrogate != null)
+                                cocktails.add(surrogate.toCocktail());
+                        }
 
 //                        if (cocktailsAPICalls > 26)
-                            addCocktailsToDB(cocktails);
-                    } else
-                        pendingStatus = Status.ERROR;
-                }
+                    addCocktailsToDB(cocktails);
+                } else
+                    pendingStatus = Status.ERROR;
+            }
 
-                @Override
-                public void onFailure(@NonNull Call<CocktailDBResult> call, @NonNull Throwable t) {
-                    Log.d("API_ERROR", "Error fetching cocktails data", t);
-                }
-            });
+            @Override
+            public void onFailure(@NonNull Call<CocktailDBResult> call, @NonNull Throwable t) {
+                Log.d("API_ERROR", "Error fetching cocktails data", t);
+                pendingStatus = Status.ERROR;
+            }
+        });
 //        }
     }
 
     private void addCocktailsToDB(List<Cocktail> cocktails) {
-        AsyncTask.execute(new Runnable() {
+        new AsyncTask<List<Cocktail>, Void, Boolean>() {
+
             @Override
-            public void run() {
+            protected Boolean doInBackground(List<Cocktail>... lists) {
                 Boolean needsUpdate = false;
-                for (Cocktail cocktail : cocktails) {
+                for (Cocktail cocktail : lists[0]) {
                     Long inserted = roomDatabaseService.cocktailDAO().insertCocktail(cocktail);
                     if (inserted == -1) {
                         Integer updated = roomDatabaseService.cocktailDAO().updateCocktail(cocktail);
@@ -159,24 +185,33 @@ public class CocktailDBRepository {
                         needsUpdate = true;
                     }
                 }
-
-                if (needsUpdate)
-                    loadCocktailsFromDB();
+                return needsUpdate;
             }
-        });
+
+            @Override
+            protected void onPostExecute(Boolean needUpdate) {
+                if (needUpdate) {
+                    loadCocktailsFromDB();
+                } else {
+                    setCocktailsObservableStatus(pendingStatus, null);
+                }
+
+            }
+        }.execute(cocktails);
     }
 
     private void loadCocktailsFromDB() {
-        AsyncTask.execute(new Runnable() {
+        new AsyncTask<Void, Void, List<CocktailWithIngredients>>() {
             @Override
-            public void run() {
-                List<CocktailWithIngredients> cocktails = roomDatabaseService.cocktailDAO().getAllCocktails();
-
-                if (cocktails != null && cocktails.size() > 0) {
-                    setCocktailsObservableData(cocktails, null);
-                }
+            protected List<CocktailWithIngredients> doInBackground(Void... voids) {
+                return roomDatabaseService.cocktailDAO().getAllCocktails();
             }
-        });
+
+            @Override
+            protected void onPostExecute(List<CocktailWithIngredients> results) {
+                setCocktailsObservableData(results, null);
+            }
+        }.execute();
     }
 
     private void setCocktailsObservableData(List<CocktailWithIngredients> cocktails, String message) {
@@ -186,6 +221,26 @@ public class CocktailDBRepository {
         }
 
         switch (loadingStatus) {
+            case LOADING:
+                cocktailsObservable.postValue(Resource.loading(cocktails));
+                break;
+            case ERROR:
+                cocktailsObservable.postValue(Resource.error(message, cocktails));
+                break;
+            case SUCCESS:
+                cocktailsObservable.postValue(Resource.success(cocktails));
+                break;
+        }
+    }
+
+    private void setCocktailsObservableStatus(Status status, String message) {
+        List<CocktailWithIngredients> cocktails = null;
+
+        if (cocktailsObservable.getValue() != null) {
+            cocktails = cocktailsObservable.getValue().data;
+        }
+
+        switch (status) {
             case LOADING:
                 cocktailsObservable.postValue(Resource.loading(cocktails));
                 break;
@@ -243,14 +298,15 @@ public class CocktailDBRepository {
     }
 
     private void addIngredientsToDB(List<Ingredient> ingredients) {
-        AsyncTask.execute(new Runnable() {
+        new AsyncTask<List<Ingredient>, Void, Boolean>() {
+
             @Override
-            public void run() {
+            protected Boolean doInBackground(List<Ingredient>... lists) {
                 Boolean needsUpdate = false;
-                for (Ingredient ingredient : ingredients) {
-                    Long inserted = roomDatabaseService.ingredientDAO().insertIngredient(ingredient);
+                for (Ingredient ingeIngredient : lists[0]) {
+                    Long inserted = roomDatabaseService.ingredientDAO().insertIngredient(ingeIngredient);
                     if (inserted == -1) {
-                        Integer updated = roomDatabaseService.ingredientDAO().updateIngredient(ingredient);
+                        Integer updated = roomDatabaseService.ingredientDAO().updateIngredient(ingeIngredient);
                         if (updated > 0) {
                             needsUpdate = true;
                         }
@@ -258,33 +314,62 @@ public class CocktailDBRepository {
                         needsUpdate = true;
                     }
                 }
-
-                if (needsUpdate)
-                    loadIngredientsFromDB();
+                return needsUpdate;
             }
-        });
+
+            @Override
+            protected void onPostExecute(Boolean needUpdate) {
+                if (needUpdate) {
+                    loadCocktailsFromDB();
+                } else {
+                    setIngredientsObservableStatus(pendingStatus, null);
+                }
+
+            }
+        }.execute(ingredients);
     }
 
     private void loadIngredientsFromDB() {
-        AsyncTask.execute(new Runnable() {
+        new AsyncTask<Void, Void, List<IngredientWithQuantity>>() {
             @Override
-            public void run() {
-                List<IngredientWithQuantity> ingredients = roomDatabaseService.ingredientDAO().getAllIngredients();
-
-                if (ingredients != null && ingredients.size() > 0) {
-                    setIngredientsObservableData(ingredients, null);
-                }
+            protected List<IngredientWithQuantity> doInBackground(Void... voids) {
+                return roomDatabaseService.ingredientDAO().getAllIngredients();
             }
-        });
+
+            @Override
+            protected void onPostExecute(List<IngredientWithQuantity> results) {
+                setIngredientsObservableData(results, null);
+            }
+        }.execute();
     }
 
-    private void setIngredientsObservableData(List<IngredientWithQuantity> ingredients, String message) {
+    private void setIngredientsObservableData
+            (List<IngredientWithQuantity> ingredients, String message) {
         Status loadingStatus = pendingStatus;
         if (ingredientsObservable.getValue() != null) {
             loadingStatus = ingredientsObservable.getValue().status;
         }
 
         switch (loadingStatus) {
+            case LOADING:
+                ingredientsObservable.postValue(Resource.loading(ingredients));
+                break;
+            case ERROR:
+                ingredientsObservable.postValue(Resource.error(message, ingredients));
+                break;
+            case SUCCESS:
+                ingredientsObservable.postValue(Resource.success(ingredients));
+                break;
+        }
+    }
+
+    private void setIngredientsObservableStatus(Status status, String message) {
+        List<IngredientWithQuantity> ingredients = null;
+        if (ingredientsObservable.getValue() != null) {
+            ingredients = ingredientsObservable.getValue().data;
+        }
+
+        switch (status) {
             case LOADING:
                 ingredientsObservable.postValue(Resource.loading(ingredients));
                 break;

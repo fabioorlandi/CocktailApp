@@ -16,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.cocktailapp.R;
 import com.example.cocktailapp.model.base.CocktailActivityResult;
@@ -97,6 +98,7 @@ public class CocktailDetailsActivity extends AppCompatActivity {
                         .setMessage(R.string.delete_dialog_message)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
+                                Toast.makeText(CocktailDetailsActivity.this, R.string.cocktail_deleted, Toast.LENGTH_SHORT).show();
                                 setResult(CocktailActivityResult.DELETE.getValue(), getIntent());
                                 finish();
                             }

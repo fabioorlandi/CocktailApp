@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CocktailApp</string>
+    <string name="app_name">Beubidinhas UwU</string>
     <string name="action_settings">Configurações</string>
     <string name="cocktail">Bebida</string>
     <string name="IBA_category">Categoria</string>
@@ -9,6 +9,7 @@
     <string name="edit">Editar</string>
     <string name="delete">Excluir</string>
     <string name="delete_dialog_title">Excluir bebida</string>
+    <string name="cocktail_deleted">Bebida excluída</string>
     <string name="delete_dialog_message">Deseja realmente excluir esta bebida?\nA ação terá efeito apenas neste dispositivo!</string>
     <string name="cancel">Cancelar</string>
     <string name="save">Salvar</string>
