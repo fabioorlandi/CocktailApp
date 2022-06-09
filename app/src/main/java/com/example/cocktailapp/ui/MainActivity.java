@@ -164,16 +164,26 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.app_status){
+        if (id == R.id.app_status) {
             AppConnectionStatus status = AppConnection.getConnectionState(this);
 
             Toast.makeText(this, getString(R.string.app_is_running) + " " + status.toString().toLowerCase(Locale.ROOT) + "!", Toast.LENGTH_SHORT).show();
+
+            return true;
         }
 
         if (id == R.id.action_sync_from_API) {
+            if (AppConnection.getConnectionState(this) == AppConnectionStatus.OFFLINE) {
+                Toast.makeText(this, getString(R.string.unable_to_do_operation) + AppConnectionStatus.OFFLINE.toString() + "!", Toast.LENGTH_SHORT).show();
+
+                return true;
+            }
+
             cocktailAdapter.setCocktailsToShow(new ArrayList<>());
             pullToRefresh.setRefreshing(true);
             viewModel.syncData();
+
+            return true;
         }
 
         return super.onOptionsItemSelected(item);

@@ -23,6 +23,8 @@ import com.example.cocktailapp.service.retrofit.CocktailDBResult;
 import com.example.cocktailapp.service.retrofit.CocktailDBRetrofitService;
 import com.example.cocktailapp.service.room.CocktailDBRoomDatabaseService;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -163,7 +165,12 @@ public class CocktailDBRepository {
                                                 connection.setDoInput(true);
                                                 connection.connect();
                                                 InputStream input = connection.getInputStream();
-                                                return BitmapFactory.decodeStream(input);
+                                                Bitmap bitmap = BitmapFactory.decodeStream(input);
+
+                                                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                                                bitmap.compress(Bitmap.CompressFormat.JPEG, 10, out);
+
+                                                return BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
                                             } catch (IOException e) {
                                                 Log.d("BITMAP_CREATION_ERROR", "Error creating Bitmap");
                                                 return null;
@@ -173,6 +180,7 @@ public class CocktailDBRepository {
                                         @Override
                                         protected void onPostExecute(Bitmap bitmap) {
                                             Cocktail cocktail = surrogate.toCocktail();
+
                                             cocktail.thumbnail = bitmap;
 
                                             addCocktailToDB(cocktail);

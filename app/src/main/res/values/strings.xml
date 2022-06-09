@@ -17,4 +17,5 @@
     <string name="sync_from_API">Sincronizar informações da API</string>
     <string name="app_status">Status da aplicação</string>
     <string name="app_is_running">A aplicação está rodando</string>
+    <string name="unable_to_do_operation">Não é possível realizar esta operação com a aplicação</string>
 </resources>

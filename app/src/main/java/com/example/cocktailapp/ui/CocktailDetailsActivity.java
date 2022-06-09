@@ -21,6 +21,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.cocktailapp.R;
+import com.example.cocktailapp.model.base.AppConnection;
+import com.example.cocktailapp.model.base.AppConnectionStatus;
 import com.example.cocktailapp.model.base.CocktailActivityResult;
 
 import java.io.ByteArrayOutputStream;
@@ -93,6 +95,12 @@ public class CocktailDetailsActivity extends AppCompatActivity {
                 finish();
                 return true;
             case R.id.action_edit:
+                if (AppConnection.getConnectionState(this) == AppConnectionStatus.ONLINE){
+                    Toast.makeText(this, getString(R.string.unable_to_do_operation) + AppConnectionStatus.ONLINE.toString() + "!", Toast.LENGTH_SHORT).show();
+
+                    return true;
+                }
+                
                 Intent intent = new Intent(this, CocktailEditDetailsActivity.class);
                 intent.putExtra("ID", Long.parseLong(this.id));
                 intent.putExtra("CocktailName", this.cocktailName.getText().toString());
@@ -109,6 +117,12 @@ public class CocktailDetailsActivity extends AppCompatActivity {
                 activityResultLauncher.launch(intent);
                 return true;
             case R.id.action_delete:
+                if (AppConnection.getConnectionState(this) == AppConnectionStatus.ONLINE){
+                    Toast.makeText(this, getString(R.string.unable_to_do_operation) + AppConnectionStatus.ONLINE.toString() + "!", Toast.LENGTH_SHORT).show();
+
+                    return true;
+                }
+
                 new AlertDialog.Builder(this)
                         .setTitle(R.string.delete_dialog_title)
                         .setMessage(R.string.delete_dialog_message)
