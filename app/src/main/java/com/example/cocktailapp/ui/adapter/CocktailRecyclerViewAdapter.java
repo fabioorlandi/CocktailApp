@@ -2,6 +2,7 @@ package com.example.cocktailapp.ui.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import com.example.cocktailapp.model.CocktailWithIngredients;
 import com.example.cocktailapp.ui.CocktailDetailsActivity;
 import com.example.cocktailapp.ui.MainActivity;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -62,10 +64,17 @@ public class CocktailRecyclerViewAdapter extends RecyclerView.Adapter<CocktailRe
             public void onClick(View v) {
                 Intent intent = new Intent(context, CocktailDetailsActivity.class);
                 intent.putExtra("ID", filteredCocktails.get(holder.getAdapterPosition()).cocktail.cocktailId);
-                intent.putExtra("Thumbnail", filteredCocktails.get(holder.getAdapterPosition()).cocktail.thumbnail);
                 intent.putExtra("CocktailName", filteredCocktails.get(holder.getAdapterPosition()).cocktail.name);
                 intent.putExtra("IBACategory", filteredCocktails.get(holder.getAdapterPosition()).cocktail.IBACategory);
                 intent.putExtra("Directions", filteredCocktails.get(holder.getAdapterPosition()).cocktail.directions);
+
+                Bitmap bitmap = filteredCocktails.get(holder.getAdapterPosition()).cocktail.thumbnail;
+
+                if (bitmap != null) {
+                    ByteArrayOutputStream bs = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 50, bs);
+                    intent.putExtra("Thumbnail", bs.toByteArray());
+                }
 
                 ((MainActivity) context).activityResultLauncher.launch(intent);
             }

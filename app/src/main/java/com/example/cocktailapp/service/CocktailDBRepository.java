@@ -57,6 +57,7 @@ public class CocktailDBRepository {
     private MutableLiveData<Resource<List<CocktailWithIngredients>>> cocktailsObservable = new MutableLiveData<>();
     private MutableLiveData<Resource<List<IngredientWithQuantity>>> ingredientsObservable = new MutableLiveData<>();
     private Status pendingStatus;
+    private Boolean cocktailDBRunning = false;
 
     private static CocktailDBRepository repository;
 
@@ -173,11 +174,10 @@ public class CocktailDBRepository {
                                             Cocktail cocktail = surrogate.toCocktail();
                                             cocktail.thumbnail = bitmap;
 
-                                            cocktails.add(surrogate.toCocktail());
-
+                                            cocktails.add(cocktail);
                                             addCocktailsToDB(cocktails);
                                         }
-                                    }.execute();
+                                    }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 }
                             }
                     } else

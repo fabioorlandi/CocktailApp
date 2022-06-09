@@ -10,6 +10,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,6 +22,8 @@ import android.widget.Toast;
 
 import com.example.cocktailapp.R;
 import com.example.cocktailapp.model.base.CocktailActivityResult;
+
+import java.io.ByteArrayOutputStream;
 
 public class CocktailDetailsActivity extends AppCompatActivity {
 
@@ -62,13 +66,18 @@ public class CocktailDetailsActivity extends AppCompatActivity {
         String cocktailName = intent.getExtras().getString("CocktailName");
         String IBACategory = intent.getExtras().getString("IBACategory");
         String directions = intent.getExtras().getString("Directions");
-        Bitmap thumbnail = intent.getParcelableExtra("Thumbnail");
+
+        if (intent.hasExtra("Thumbnail")) {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(
+                    intent.getByteArrayExtra("Thumbnail"), 0,
+                    intent.getByteArrayExtra("Thumbnail").length);
+            this.thumbnail.setImageBitmap(bitmap);
+        }
 
         this.id = id.toString();
         this.cocktailName.setText(cocktailName);
         this.IBACategory.setText(IBACategory);
         this.directions.setText(directions);
-        this.thumbnail.setImageBitmap(thumbnail);
     }
 
     @Override
@@ -86,9 +95,16 @@ public class CocktailDetailsActivity extends AppCompatActivity {
             case R.id.action_edit:
                 Intent intent = new Intent(this, CocktailEditDetailsActivity.class);
                 intent.putExtra("ID", Long.parseLong(this.id));
-                intent.putExtra("Thumbnail", this.thumbnail.getDrawingCache());
                 intent.putExtra("CocktailName", this.cocktailName.getText().toString());
                 intent.putExtra("Directions", this.directions.getText().toString());
+
+                Bitmap bitmap = ((BitmapDrawable)this.thumbnail.getDrawable()).getBitmap();
+
+                if (bitmap != null) {
+                    ByteArrayOutputStream bs = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 50, bs);
+                    intent.putExtra("Thumbnail", bs.toByteArray());
+                }
 
                 activityResultLauncher.launch(intent);
                 return true;

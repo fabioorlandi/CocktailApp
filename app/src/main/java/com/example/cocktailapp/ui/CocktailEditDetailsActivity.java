@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,12 +40,16 @@ public class CocktailEditDetailsActivity extends AppCompatActivity {
         Long id = intent.getExtras().getLong("ID");
         String cocktailName = intent.getExtras().getString("CocktailName");
         String directions = intent.getExtras().getString("Directions");
-        Bitmap thumbnail = intent.getParcelableExtra("Thumbnail");
 
+        if (intent.hasExtra("Thumbnail")) {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(
+                    intent.getByteArrayExtra("Thumbnail"), 0,
+                    intent.getByteArrayExtra("Thumbnail").length);
+            this.thumbnail.setImageBitmap(bitmap);
+        }
         this.id = id.toString();
         this.cocktailName.setText(cocktailName, TextView.BufferType.EDITABLE);
         this.directions.setText(directions, TextView.BufferType.EDITABLE);
-        this.thumbnail.setImageBitmap(thumbnail);
     }
 
     @Override
