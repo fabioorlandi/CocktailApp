@@ -1,5 +1,7 @@
 package com.example.cocktailapp.service;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -20,6 +22,10 @@ import com.example.cocktailapp.service.retrofit.CocktailDBResult;
 import com.example.cocktailapp.service.retrofit.CocktailDBRetrofitService;
 import com.example.cocktailapp.service.room.CocktailDBRoomDatabaseService;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -145,11 +151,35 @@ public class CocktailDBRepository {
                         pendingStatus = Status.SUCCESS;
                         if (response.body() != null && ((CocktailDBResult) response.body()).drinks != null)
                             for (CocktailSurrogate surrogate : ((CocktailDBResult) response.body()).drinks) {
-                                if (surrogate != null)
-                                    cocktails.add(surrogate.toCocktail());
-                            }
+                                if (surrogate != null) {
+                                    new AsyncTask<Void, Void, Bitmap>() {
+                                        @Override
+                                        protected Bitmap doInBackground(Void... voids) {
+                                            try {
+                                                URL url = new URL(surrogate.strDrinkThumb);
+                                                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                                                connection.setDoInput(true);
+                                                connection.connect();
+                                                InputStream input = connection.getInputStream();
+                                                return BitmapFactory.decodeStream(input);
+                                            } catch (IOException e) {
+                                                Log.d("BITMAP_CREATION_ERROR", "Error creating Bitmap");
+                                                return null;
+                                            }
+                                        }
 
-                            addCocktailsToDB(cocktails);
+                                        @Override
+                                        protected void onPostExecute(Bitmap bitmap) {
+                                            Cocktail cocktail = surrogate.toCocktail();
+                                            cocktail.thumbnail = bitmap;
+
+                                            cocktails.add(surrogate.toCocktail());
+
+                                            addCocktailsToDB(cocktails);
+                                        }
+                                    }.execute();
+                                }
+                            }
                     } else
                         pendingStatus = Status.ERROR;
                 }

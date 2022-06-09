@@ -61,54 +61,10 @@ public class CocktailSurrogate {
         cocktail.alcoholicType = strAlcoholic;
         cocktail.glassType = strGlass;
         cocktail.directions = strInstructions;
-        cocktail.thumbnail = this.createBitmap(strDrinkThumb);
-        cocktail.image = this.createBitmap(strImageSource);
         cocktail.dateModified = this.getDate(dateModified);
 
         return cocktail;
     }
-
-    private Bitmap createBitmap(String imageURL) {
-        final Bitmap[] bitmaps = new Bitmap[1];
-
-//        Picasso.with(this)
-//                .load(imageURL)
-//                .into(new Target() {
-//                    @Override
-//                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-//                        bitmaps[0] = bitmap;
-//                    }
-//
-//                    @Override
-//                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-//                        Log.d("BITMAP_CREATION_ERROR", "Error creating Bitmap");
-//                    }
-//
-//                    @Override
-//                    public void onPrepareLoad(Drawable placeHolderDrawable) {
-//                    }
-//                });
-
-         AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    URL url = new URL(imageURL);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setDoInput(true);
-                    connection.connect();
-                    InputStream input = connection.getInputStream();
-                    bitmaps[0] = BitmapFactory.decodeStream(input);
-                } catch (IOException e) {
-                    Log.d("BITMAP_CREATION_ERROR", "Error creating Bitmap");
-                    bitmaps[0] = null;
-                }
-            }
-        });
-
-        return bitmaps[0];
-    }
-
 
     private Date getDate(String dateModified) {
         if (dateModified != null) {
