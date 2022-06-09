@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.cocktailapp.model.Cocktail;
 import com.example.cocktailapp.model.CocktailWithIngredients;
 import com.example.cocktailapp.model.IngredientWithQuantity;
+import com.example.cocktailapp.model.base.AppConnectionStatus;
 import com.example.cocktailapp.model.base.Resource;
 import com.example.cocktailapp.service.CocktailDBRepository;
 

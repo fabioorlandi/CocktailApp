@@ -3,6 +3,7 @@ package com.example.cocktailapp.service;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -82,6 +83,8 @@ public class CocktailDBRepository {
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Void... voids) {
+                setCocktailsObservableData(new ArrayList<>(), "");
+
                 roomDatabaseService.cocktailDAO().drop();
                 roomDatabaseService.ingredientDAO().drop();
 
@@ -142,9 +145,7 @@ public class CocktailDBRepository {
     }
 
     private void loadCocktailsFromAPI() {
-        List<Cocktail> cocktails = new ArrayList<>();
-
-        for (char letter = 'a'; letter <= 'z'; letter++) {
+        for (char letter = 'c'; letter <= 'm'; letter++) {
             retrofitService.getCocktailsByFirstLetter(Character.toString(letter)).enqueue(new Callback<CocktailDBResult>() {
                 @Override
                 public void onResponse(@NonNull Call<CocktailDBResult> call, @NonNull Response<CocktailDBResult> response) {
@@ -174,8 +175,7 @@ public class CocktailDBRepository {
                                             Cocktail cocktail = surrogate.toCocktail();
                                             cocktail.thumbnail = bitmap;
 
-                                            cocktails.add(cocktail);
-                                            addCocktailsToDB(cocktails);
+                                            addCocktailToDB(cocktail);
                                         }
                                     }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 }
@@ -193,22 +193,21 @@ public class CocktailDBRepository {
         }
     }
 
-    private void addCocktailsToDB(List<Cocktail> cocktails) {
-        new AsyncTask<List<Cocktail>, Void, Boolean>() {
+    private void addCocktailToDB(Cocktail cocktail) {
+        new AsyncTask<Cocktail, Void, Boolean>() {
 
             @Override
-            protected Boolean doInBackground(List<Cocktail>... lists) {
+            protected Boolean doInBackground(Cocktail... lists) {
                 Boolean needsUpdate = false;
-                for (Cocktail cocktail : lists[0]) {
-                    Long inserted = roomDatabaseService.cocktailDAO().insertCocktail(cocktail);
-                    if (inserted == -1) {
-                        Integer updated = roomDatabaseService.cocktailDAO().updateCocktail(cocktail);
-                        if (updated > 0) {
-                            needsUpdate = true;
-                        }
-                    } else {
+                Cocktail cocktail = lists[0];
+                Long inserted = roomDatabaseService.cocktailDAO().insertCocktail(cocktail);
+                if (inserted == -1) {
+                    Integer updated = roomDatabaseService.cocktailDAO().updateCocktail(cocktail);
+                    if (updated > 0) {
                         needsUpdate = true;
                     }
+                } else {
+                    needsUpdate = true;
                 }
                 return needsUpdate;
             }
@@ -222,7 +221,7 @@ public class CocktailDBRepository {
                 }
 
             }
-        }.execute(cocktails);
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, cocktail);
     }
 
     private void loadCocktailsFromDB() {
@@ -280,8 +279,6 @@ public class CocktailDBRepository {
     }
 
     private void loadIngredientsFromAPI() {
-        List<Ingredient> ingredients = new ArrayList<>();
-
         retrofitService.getAllIngredientsNames().enqueue(new Callback<CocktailDBResult>() {
             @Override
             public void onResponse(@NonNull Call<CocktailDBResult> call, @NonNull Response<CocktailDBResult> response) {
@@ -297,10 +294,9 @@ public class CocktailDBRepository {
                                             pendingStatus = Status.SUCCESS;
                                             for (IngredientSurrogate surrogate : ((CocktailDBResult) response.body()).ingredients) {
                                                 if (surrogate != null)
-                                                    ingredients.add(surrogate.toIngredient());
+                                                    addIngredientsToDB(surrogate.toIngredient());
                                             }
 
-                                            addIngredientsToDB(ingredients);
                                         } else
                                             pendingStatus = Status.ERROR;
                                     }
@@ -323,22 +319,21 @@ public class CocktailDBRepository {
 
     }
 
-    private void addIngredientsToDB(List<Ingredient> ingredients) {
-        new AsyncTask<List<Ingredient>, Void, Boolean>() {
+    private void addIngredientsToDB(Ingredient ingredient) {
+        new AsyncTask<Ingredient, Void, Boolean>() {
 
             @Override
-            protected Boolean doInBackground(List<Ingredient>... lists) {
+            protected Boolean doInBackground(Ingredient... lists) {
                 Boolean needsUpdate = false;
-                for (Ingredient ingeIngredient : lists[0]) {
-                    Long inserted = roomDatabaseService.ingredientDAO().insertIngredient(ingeIngredient);
-                    if (inserted == -1) {
-                        Integer updated = roomDatabaseService.ingredientDAO().updateIngredient(ingeIngredient);
-                        if (updated > 0) {
-                            needsUpdate = true;
-                        }
-                    } else {
+                Ingredient ingredient = lists[0];
+                Long inserted = roomDatabaseService.ingredientDAO().insertIngredient(ingredient);
+                if (inserted == -1) {
+                    Integer updated = roomDatabaseService.ingredientDAO().updateIngredient(ingredient);
+                    if (updated > 0) {
                         needsUpdate = true;
                     }
+                } else {
+                    needsUpdate = true;
                 }
                 return needsUpdate;
             }
@@ -352,7 +347,7 @@ public class CocktailDBRepository {
                 }
 
             }
-        }.execute(ingredients);
+        }.execute(ingredient);
     }
 
     private void loadIngredientsFromDB() {

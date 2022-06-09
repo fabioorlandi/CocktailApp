@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -26,6 +27,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.example.cocktailapp.R;
 import com.example.cocktailapp.databinding.ActivityMainBinding;
 import com.example.cocktailapp.model.CocktailWithIngredients;
+import com.example.cocktailapp.model.base.AppConnection;
+import com.example.cocktailapp.model.base.AppConnectionStatus;
 import com.example.cocktailapp.model.base.CocktailActivityResult;
 import com.example.cocktailapp.model.base.Resource;
 import com.example.cocktailapp.model.base.Status;
@@ -39,6 +42,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -159,6 +163,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+
+        if (id == R.id.app_status){
+            AppConnectionStatus status = AppConnection.getConnectionState(this);
+
+            Toast.makeText(this, getString(R.string.app_is_running) + " " + status.toString().toLowerCase(Locale.ROOT) + "!", Toast.LENGTH_SHORT).show();
+        }
 
         if (id == R.id.action_sync_from_API) {
             cocktailAdapter.setCocktailsToShow(new ArrayList<>());
